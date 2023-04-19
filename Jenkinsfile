@@ -1,24 +1,28 @@
 pipeline {
-
-  agent any
-  
-  stages {
-    stage("build") {
-      step {
-        echo 'building the application...'
-      }
+    agent {
+        kubernetes {
+            label 'wordpress'
+        }
     }
-    
-    stage("test") {
-      step {
-        echo 'testing the application...'
-      }
+    stages {
+        stage('Build') {
+            steps {
+                sh 'docker build -t mywordpress:latest .'
+                sh 'docker tag mywordpress:latest myacr.azurecr.io/mywordpress:latest'
+                sh 'az acr login --name myacr'
+                sh 'docker push myacr.azurecr.io/mywordpress:latest'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                kubernetesDeploy(
+                    kubeconfigId: 'mykubeconfig',
+                    configs: 'k8s/wordpress.yaml',
+                    enableConfigSubstitution: true,
+                    enableConfigMapSubstitution: true,
+                    forceRollingUpdate: true
+                )
+            }
+        }
     }
-    
-    stage("deploy") {
-      step {
-        echo 'deploying the application...'
-      }
-    }
-  }
 }
