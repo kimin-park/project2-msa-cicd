@@ -17,7 +17,6 @@ pipeline {
     stage('SCM') {
         checkout scm
     }
-
     stage('Build') {
         withCredentials([azureServicePrincipal(servicePrincipalId)]) {
             sh """
@@ -29,7 +28,6 @@ pipeline {
             """
         }
     }
-
     stage('Docker Image') {
         withDockerRegistry([credentialsId: dockerCredentialId, url: "http://${dockerRegistry}"]) {
             dir('target') {
