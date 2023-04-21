@@ -1,51 +1,32 @@
 pipeline {
-    agent {
-        kubernetes {
-            label 'wordpress'
-        }
-    }
-    stages {
-        stage('Build') {
-            steps {
-                sh 'docker build -t mywordpress:latest .'
-                sh 'docker tag mywordpress:latest myacr.azurecr.io/mywordpress:latest'
-                sh 'az acr login --name myacr'
-                sh 'docker push myacr.azurecr.io/mywordpress:latest'
-            }
-        }
-        stage('Deploy') {
-            steps {
-                kubernetesDeploy(
-                    kubeconfigId: 'mykubeconfig',
-                    configs: 'k8s/wordpress.yaml',
-                    enableConfigSubstitution: true,
-                    enableConfigMapSubstitution: true,
-                    forceRollingUpdate: true
-                )
-            }
-        }
-    }
-}
-
-pipeline {
     agent any
-    
+    environment {
+        REGISTRY = "cicd2project.azurecr.io"
+        IMAGE_NAME = "mysql"
+        IMAGE_TAG = "8.0"
+        CONTAINER_NAME = "mysql-aks"
+        KUBECONFIG = credentials('kubeconfig')
+    }
     stages {
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('https://my-acr.azurecr.io', 'my-acr-login') {
-                        def app = docker.build("my-acr.azurecr.io/my-app:${env.BUILD_NUMBER}", '.')
-                        app.push()
+                    docker.build("${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}", "-f Dockerfile .")
+                    docker.withRegistry(REGISTRY, 'acr') {
+                        docker.push("${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}")
                     }
                 }
             }
         }
-        
-        stage('Deploy') {
+        stage('Deploy to AKS') {
             steps {
                 script {
-                    kubernetesDeploy(
-                        kubeconfigId: 'my-kubeconfig',
-                        configs: 'kubernetes/*.yml',
-                        enableConfig
+                    sh "kubectl config use-context my-aks-context"
+                    sh "kubectl create deployment ${CONTAINER_NAME} --image=${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "kubectl scale deployment ${CONTAINER_NAME} --replicas=1"
+                    sh "kubectl expose deployment ${CONTAINER_NAME} --port=3306 --type=ClusterIP"
+                }
+            }
+        }
+    }
+}
