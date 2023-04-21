@@ -70,3 +70,36 @@ pipeline {
         }
     }
 }
+
+    
+    pipeline {
+    agent any
+    environment {
+        ACR_NAME = 'cicd2project' // Azure ACR 이름으로 변경
+        IMAGE_NAME = 'mysql' // 변경하지 않아도 됩니다.
+        NEW_IMAGE_TAG = '8.0' // 변경할 이미지 태그
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build and Push Image') {
+            steps {
+                script {
+                    docker.build("${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${NEW_IMAGE_TAG}", ".")
+                    docker.withRegistry("https://${ACR_NAME}.azurecr.io", 'acr') {
+                        docker.image("${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${NEW_IMAGE_TAG}").push()
+                    }
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'terraform init'
+                sh 'terraform apply'
+            }
+        }
+    }
+}
