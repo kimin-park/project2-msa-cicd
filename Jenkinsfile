@@ -26,3 +26,26 @@ pipeline {
         }
     }
 }
+
+pipeline {
+    agent any
+    
+    stages {
+        stage('Build') {
+            steps {
+                script {
+                    docker.withRegistry('https://my-acr.azurecr.io', 'my-acr-login') {
+                        def app = docker.build("my-acr.azurecr.io/my-app:${env.BUILD_NUMBER}", '.')
+                        app.push()
+                    }
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                script {
+                    kubernetesDeploy(
+                        kubeconfigId: 'my-kubeconfig',
+                        configs: 'kubernetes/*.yml',
+                        enableConfig
