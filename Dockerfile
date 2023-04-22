@@ -1,5 +1,5 @@
-FROM ubuntu
+FROM mysql:5.7
 
-RUN /bin/bash -c 'echo This would generally be apt-get or other system conf'
-ENV myCustomEnvVar="This is a sample." \
-    otherEnvVar="This is also a sample."
+ENV MYSQL_ROOT_PASSWORD=Rapaclass1234
+
+COPY ./init.sql /docker-entrypoint-initdb.d/
