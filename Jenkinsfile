@@ -4,7 +4,7 @@ pipeline {
     stages() {
         stage('git clone') {
             steps() {
-                git 'https://github.com/leeseok0916/jenkinsTest.git'
+                git 'https://github.com/kimin-park/project2-msa-cicd.git'
             }
         }
         
