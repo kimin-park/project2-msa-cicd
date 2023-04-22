@@ -1,3 +1,5 @@
-FROM mysql:8.0
+FROM mysql:5.7
 
-COPY my.cnf /etc/mysql/conf.d/
+ENV MYSQL_ROOT_PASSWORD=Rapaclass1234
+
+COPY ./init.sql /docker-entrypoint-initdb.d/
