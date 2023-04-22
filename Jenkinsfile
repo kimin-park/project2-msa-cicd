@@ -28,7 +28,7 @@ pipeline {
         stage('deploy terraform') {
             steps {
                 sh '''
-                sed -i -e 's/image = "mysql:5.7"/image = "cicd2project.azurecr.io\/mysql:1.1"/g' main.tf
+                sed -i -e 's/image = "mysql:5.7"/image = "cicd2project.azurecr.io/mysql:1.1"/g' main.tf
                 terraform init
                 terraform apply -auto-approve
                 '''
