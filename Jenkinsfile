@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('git clone') {
             steps() {
-              git 'https://github.com/kimin-park/project2-msa-cicd.git'
+              git branch: 'main', url: 'https://github.com/kimin-park/project2-msa-cicd.git'
             }
         }
         stage('Upload file to Azure Storage file share') {
