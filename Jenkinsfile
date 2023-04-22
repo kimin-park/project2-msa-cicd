@@ -21,7 +21,7 @@ pipeline {
                                   storageAccountConnectionString: "DefaultEndpointsProtocol=https;AccountName=f5da8435a4b8647d9b78ffa;AccountKey=+ktswd5CF9LEkhE0RH7phQb79+uJdPw2vtH+jOFqUkmputSOf91iLd8b/0JLB/oBBFarPC4JP+uk+AStJvpfKw==;EndpointSuffix=core.windows.net",
                                   sourcePath: "index.php",
                                   fileShareName: "pvc-8853511a-018d-42b6-b984-dbe35552b16c",
-                                  targetPath: "$./$index.php") {
+                                  targetPath: "./index.php") {
                     sh 'echo "File uploaded successfully!"'
                 }
             }
