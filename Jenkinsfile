@@ -1,39 +1,30 @@
 pipeline {
     agent any
-    
-    stages() {
-        stage('git clone') {
-            steps() {
-                git 'https://github.com/kimin-park/project2-msa-cicd.git'
-            }
+    stages {
+        stage('git scm update') {
+          steps {
+              git url: 'https://github.com/kimin-park/project2-msa-cicd.git' , branch: 'main'
+          }
         }
-        
         stage('docker build and push') {
             steps {
-                script {
-                    def acrServer = "cicd2project.azurecr.io"
-                    def imageName = "mysql"
-                    def imageTag  = "1.1"
-                    def dockerfileDir = "./"
-                    def registryCredential = 'Kimin-Park'
-
-                    def dockerImage = docker.build("${acrServer}/${imageName}:${imageTag}", "-f ${dockerfileDir}Dockerfile ${dockerfileDir}")
-                    docker.withRegistry("https://${acrServer}", registryCredential) {
-                        dockerImage.push()
-                    }
+              sh '''
+              docker build -t lkasd7512/jenkins:1.0 .
+              docker push lkasd7512/jenkins:1.0
+              '''
+                
+            }
+        }
+        stage('deploy kubernetes') {
+            steps {
+                withAzureCLI([azureSubscription(credentialsId: '', subscriptionId: '')]) {
+                    sh '''
+                    az aks get-credentials --resource-group projec2-msa-cicd --name msacluster
+                    kubectl create deployment pl-bulk-prod --image=192.168.1.10:8443/echo-ip
+                    kubectl expose deployment pl-bulk-prod --type=LoadBalancer --port=8081 --target-port=80 --name=pl-bulk-prod-
+                    '''
                 }
             }
         }
-        
-        stage('deploy terraform') {
-            steps {
-                sh '''
-                sed -i -e 's/image = "mysql:5.7"/image = "cicd2project.azurecr.io/mysql:1.1"/g' main.tf
-                terraform init
-                terraform apply -auto-approve
-                '''
-            }
-        }        
     }
 }
-
