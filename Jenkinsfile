@@ -1,9 +1,9 @@
 pipeline {
     agent any
     
-    stages() {
+    stages {
         stage('git clone') {
-            steps() {
+            steps {
                 git 'https://github.com/kimin-park/project2-msa-cicd.git'
             }
         }
@@ -36,4 +36,3 @@ pipeline {
         }        
     }
 }
-
