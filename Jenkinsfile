@@ -1,29 +1,24 @@
 pipeline {
     agent any
     stages {
-        stage('git scm update') {
-          steps {
-              git url: 'https://github.com/kimin-park/project2-msa-cicd.git' , branch: 'main'
-          }
-        }
-        stage('docker build and push') {
+        stage('Checkout') {
             steps {
-              sh '''
-              docker build -t lkasd7512/jenkins:1.0 .
-              docker push lkasd7512/jenkins:1.0
-              '''
-                
+                git 'https://github.com/kimin-park/project2-msa-cicd.git'
             }
         }
-        stage('deploy kubernetes') {
+        stage('Build') {
             steps {
-                withAzureCLI([azureSubscription(credentialsId: '', subscriptionId: '')]) {
-                    sh '''
-                    az aks get-credentials --resource-group projec2-msa-cicd --name msacluster
-                    kubectl create deployment pl-bulk-prod --image=192.168.1.10:8443/echo-ip
-                    kubectl expose deployment pl-bulk-prod --type=LoadBalancer --port=8081 --target-port=80 --name=pl-bulk-prod-
-                    '''
-                }
+                sh 'npm install'
+                sh 'npm run build'
+            }
+        }
+        stage('Deploy') {
+            environment {
+                KUBECONFIG = credentials('your-kubeconfig')
+            }
+            steps {
+                sh 'kubectl apply -f kubernetes/deployment.yaml'
+                sh 'kubectl apply -f kubernetes/service.yaml'
             }
         }
     }
