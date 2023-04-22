@@ -10,6 +10,11 @@ pipeline {
     }
 
     stages {
+        stage('git clone') {
+            steps() {
+              git 'https://github.com/kimin-park/project2-msa-cicd.git'
+            }
+        }
         stage('Upload file to Azure Storage file share') {
             steps {
                 withAzureFileCopy(credentialsType: 'storageAccountConnectionString',
