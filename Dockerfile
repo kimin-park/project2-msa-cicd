@@ -1,5 +1,8 @@
-FROM mysql:5.7
+FROM nginx:stable
 
-ENV MYSQL_ROOT_PASSWORD=Rapaclass1234
+LABEL Name=echo-ip Version=0.0.5
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY cert.crt /etc/nginx/conf.d/cert.crt
+COPY cert.key /etc/nginx/conf.d/cert.key
 
-COPY ./init.sql /docker-entrypoint-initdb.d/
+CMD ["nginx", "-g", "daemon off;"]
